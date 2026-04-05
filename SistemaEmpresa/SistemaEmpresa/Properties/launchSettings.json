@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SistemaEmpresa (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "SistemaEmpresa (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

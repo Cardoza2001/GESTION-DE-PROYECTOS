@@ -1,0 +1,24 @@
+<Window
+    x:Class="SistemaEmpresa.Views.Jefe.JefeWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+            <TextBlock Text="Proyectos"/>
+            <ListView x:Name="listaProyectos"/>
+            <Button Content="Aprobar" Click="Aprobar_Click"/>
+        </StackPanel>
+
+
+        <StackPanel Grid.Row="1">
+            <TextBlock Text="Transacciones"/>
+            <ListView x:Name="listaTransacciones"/>
+        </StackPanel>
+    </Grid>
+</Window>
