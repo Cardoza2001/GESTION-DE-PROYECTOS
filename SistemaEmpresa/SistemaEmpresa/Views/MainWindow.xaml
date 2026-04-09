@@ -4,12 +4,43 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Padding="20" Spacing="10">
-        <TextBlock Text="Sistema Empresa" FontSize="24"/>
+    <StackPanel Padding="30" Spacing="15">
 
-        <Button Content="Consumibles" Click="Consumibles_Click"/>
-        <Button Content="Herramientas" Click="Herramientas_Click"/>
-        <Button Content="Proyectos" Click="Proyectos_Click"/>
-        <Button Content="Panel Jefe" Click="Jefe_Click"/>
+        <!-- Título -->
+        <TextBlock Text="Sistema Empresa"
+                   FontSize="26"
+                   FontWeight="Bold"/>
+
+        <!-- Bienvenida -->
+        <TextBlock x:Name="txtBienvenida"
+                   FontSize="16"
+                   Foreground="Gray"/>
+
+        <!-- Línea divisoria -->
+        <Border Height="1"
+                Background="Gray"
+                Margin="0,10,0,10"/>
+
+        <!-- Botones -->
+
+        <Button x:Name="btnConsumibles"
+                Content="Consumibles"
+                Click="Consumibles_Click"/>
+
+        <Button x:Name="btnHerramientas"
+                Content="Herramientas"
+                Click="Herramientas_Click"/>
+
+        <Button x:Name="btnProyectos"
+                Content="Proyectos"
+                Click="Proyectos_Click"/>
+
+        <Button x:Name="btnJefe"
+                Content="Panel del Jefe"
+                Click="Jefe_Click"/>
+
+        <Button Content="Cerrar sesión"
+        Click="Logout_Click"/>
+
     </StackPanel>
 </Window>

@@ -1,0 +1,5 @@
+| Usuario  | Contraseña | Rol      |
+| -------- | ---------- | -------- |
+| admin    | 123        | Admin    |
+| jefe     | 123        | Jefe     |
+| empleado | 123        | Empleado |

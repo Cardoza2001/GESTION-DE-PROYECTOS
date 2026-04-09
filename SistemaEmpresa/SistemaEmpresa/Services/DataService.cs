@@ -1,16 +1,25 @@
-﻿using System;
-using System.Linq;
+﻿using SistemaEmpresa.Models;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using SistemaEmpresa.Models;
+using System.Linq;
 
 namespace SistemaEmpresa.Services
 {
     public static class DataService
     {
-        public static ObservableCollection<Consumible> Consumibles = new();
-        public static ObservableCollection<Herramienta> Herramientas = new();
-        public static ObservableCollection<Proyecto> Proyectos = new();
-        public static ObservableCollection<Transaccion> Transacciones = new();
+        public static ObservableCollection<Consumible> Consumibles { get; } = new();
+        public static ObservableCollection<Herramienta> Herramientas { get; } = new();
+        public static ObservableCollection<Proyecto> Proyectos { get; } = new();
+        public static ObservableCollection<Transaccion> Transacciones { get; } = new();
+
+        // USUARIOS DEL SISTEMA
+        public static List<Usuario> Usuarios { get; } = new()
+        {
+            new Usuario { Nombre = "admin", Password = "123", Rol = "Admin" },
+            new Usuario { Nombre = "jefe", Password = "123", Rol = "Jefe" },
+            new Usuario { Nombre = "empleado", Password = "123", Rol = "Empleado" }
+        };
 
         // VALIDAR RECURSOS
         public static bool ValidarRecursos()
@@ -40,6 +49,7 @@ namespace SistemaEmpresa.Services
                 if (c.Cantidad <= c.NivelMinimo)
                     return $"Alerta: {c.Nombre} bajo";
             }
+
             return "";
         }
     }

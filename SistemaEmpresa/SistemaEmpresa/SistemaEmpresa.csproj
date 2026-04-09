@@ -16,6 +16,7 @@
     <None Remove="Views\Consumibles\ConsumiblesWindow.xaml" />
     <None Remove="Views\Herramientas\HerramientasWindow.xaml" />
     <None Remove="Views\Jefe\JefeWindow.xaml" />
+    <None Remove="Views\Login\LoginWindow.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Proyectos\ProyectosWindow.xaml" />
   </ItemGroup>
@@ -49,6 +50,11 @@
   <ItemGroup>
     <Folder Include="Helpers\" />
     <Folder Include="ViewsModels\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Login\LoginWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Jefe\JefeWindow.xaml">
