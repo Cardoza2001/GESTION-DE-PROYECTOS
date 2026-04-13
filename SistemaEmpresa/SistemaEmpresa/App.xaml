@@ -4,13 +4,39 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:SistemaEmpresa">
+
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
-            <!-- Other app resources here -->
+
+            <!-- 🔥 TEXTBOX -->
+            <Style TargetType="TextBox">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="#9CA3AF"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding" Value="10"/>
+
+                <!-- ❌ Quitar efecto morado -->
+                <Setter Property="FocusVisualPrimaryBrush" Value="Transparent"/>
+                <Setter Property="FocusVisualSecondaryBrush" Value="Transparent"/>
+            </Style>
+
+            <!-- 🔥 PASSWORDBOX -->
+            <Style TargetType="PasswordBox">
+                <Setter Property="Background" Value="White"/>
+                <Setter Property="BorderBrush" Value="#9CA3AF"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="CornerRadius" Value="6"/>
+                <Setter Property="Padding" Value="10"/>
+
+                <!-- ❌ Quitar efecto morado -->
+                <Setter Property="FocusVisualPrimaryBrush" Value="Transparent"/>
+                <Setter Property="FocusVisualSecondaryBrush" Value="Transparent"/>
+            </Style>
+
         </ResourceDictionary>
     </Application.Resources>
 </Application>

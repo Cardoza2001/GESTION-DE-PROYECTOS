@@ -1,44 +1,35 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 using SistemaEmpresa.Models;
 using SistemaEmpresa.Services;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 
 namespace SistemaEmpresa.Views.Consumibles
 {
     public sealed partial class ConsumiblesWindow : Window
     {
-        public ConsumiblesWindow()
+        private Usuario _usuario; // 👈 ahora guardamos el usuario
+
+        public ConsumiblesWindow(Usuario usuario)
         {
             this.InitializeComponent();
+            _usuario = usuario;
 
-            // 🔥 SOLO se asigna una vez
             lista.ItemsSource = DataService.Consumibles;
         }
 
         private async void Agregar_Click(object sender, RoutedEventArgs e)
         {
             // Validar nombre
-            if (string.IsNullOrWhiteSpace(txtNombre.Text))
+            if (!ValidationService.EsTextoValido(txtNombre.Text))
             {
-                await MostrarMensaje("El nombre no puede estar vacío");
+                await MostrarMensaje("El nombre es obligatorio");
                 return;
             }
 
             // Validar cantidad
-            if (!int.TryParse(txtCantidad.Text, out int cantidad))
+            if (!ValidationService.EsEnteroValido(txtCantidad.Text, out int cantidad))
             {
                 await MostrarMensaje("La cantidad debe ser un número válido");
                 return;
@@ -54,27 +45,38 @@ namespace SistemaEmpresa.Views.Consumibles
             // Agregar consumible
             DataService.Consumibles.Add(new Consumible
             {
-                Nombre = txtNombre.Text,
+                Nombre = txtNombre.Text.Trim(),
                 Cantidad = cantidad,
                 NivelMinimo = 5
             });
 
-            // 🔥 Limpiar campos (opcional pero recomendado)
+            // Limpiar campos
             txtNombre.Text = "";
             txtCantidad.Text = "";
         }
 
         private async Task MostrarMensaje(string mensaje)
         {
+            var root = this.Content as FrameworkElement;
+
+            if (root == null) return;
+
             var dialog = new ContentDialog
             {
                 Title = "Error",
                 Content = mensaje,
                 CloseButtonText = "OK",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = root.XamlRoot
             };
 
             await dialog.ShowAsync();
+        }
+
+        private void Volver_Click(object sender, RoutedEventArgs e)
+        {
+            var main = new MainWindow(_usuario); // 👈 recrea la principal
+            main.Activate();
+            this.Close();
         }
     }
 }

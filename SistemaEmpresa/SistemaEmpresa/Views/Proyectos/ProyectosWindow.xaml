@@ -1,24 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="SistemaEmpresa.Views.Proyectos.ProyectosWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Padding="20" Spacing="10">
+    <Grid Background="#F3F4F6">
 
-        <TextBlock Text="Gestión de Proyectos"
-                   FontSize="22"
-                   FontWeight="Bold"/>
+        <!-- HEADER -->
+        <Grid Background="#3B82F6" Height="60" VerticalAlignment="Top">
+            <TextBlock Text="Sistema Empresarial"
+                       Foreground="White"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="20,0"/>
 
-        <TextBox x:Name="txtNombre"
-                 PlaceholderText="Nombre del proyecto"/>
+            <Button Content="Volver"
+                    Click="Volver_Click"
+                    Background="White"
+                    Foreground="#3B82F6"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,20,0"
+                    VerticalAlignment="Center"/>
+        </Grid>
 
-        <TextBox x:Name="txtCosto"
-                 PlaceholderText="Costo estimado"/>
+        <!-- CONTENIDO -->
+        <StackPanel Margin="20,80,20,20" Spacing="15">
 
-        <Button Content="Crear Proyecto"
-                Click="Crear_Click"/>
+            <TextBlock Text="Gestión de Proyectos"
+                       FontSize="22"
+                       FontWeight="Bold"/>
 
-        <ListView x:Name="lista"/>
+            <!-- FORMULARIO -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
 
-    </StackPanel>
+                <TextBox x:Name="txtNombre"
+                         PlaceholderText="Nombre del proyecto"
+                         Width="220"/>
+
+                <TextBox x:Name="txtCosto"
+                         PlaceholderText="Costo estimado"
+                         Width="150"/>
+
+                <Button Content="Crear"
+                        Click="Crear_Click"
+                        Background="#3B82F6"
+                        Foreground="White"/>
+            </StackPanel>
+
+            <!-- LISTA -->
+            <Border Background="White" CornerRadius="10" Padding="10">
+                <ListView x:Name="lista" Height="350"/>
+            </Border>
+
+        </StackPanel>
+    </Grid>
 </Window>

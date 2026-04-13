@@ -1,22 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="SistemaEmpresa.Views.Login.LoginWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Padding="30" Spacing="10">
+    <Grid Background="#F3F4F6">
 
-        <TextBlock Text="Inicio de Sesión"
-                   FontSize="22"
-                   FontWeight="Bold"/>
+        <!-- CONTENEDOR CENTRADO -->
+        <Grid HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Width="350">
 
-        <TextBox x:Name="txtUsuario"
-                 PlaceholderText="Usuario"/>
+            <!-- TARJETA -->
+            <Border Background="White"
+                    Padding="25"
+                    CornerRadius="12">
 
-        <PasswordBox x:Name="txtPassword"
-                     PlaceholderText="Contraseña"/>
+                <StackPanel Spacing="15">
 
-        <Button Content="Ingresar"
-                Click="Login_Click"/>
+                    <!-- TÍTULO -->
+                    <TextBlock Text="Sistema Empresarial"
+                               FontSize="20"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
 
-    </StackPanel>
+                    <TextBlock Text="Iniciar Sesión"
+                               FontSize="16"
+                               HorizontalAlignment="Center"
+                               Foreground="Gray"/>
+
+                    <!-- USUARIO -->
+                    <TextBox x:Name="txtUsuario"
+                                 PlaceholderText="Usuario"
+                                 Background="#F9FAFB"
+                                 BorderBrush="#D1D5DB"
+                                 BorderThickness="1"
+                                 CornerRadius="6"
+                                 Padding="10"/>
+
+                    <!-- PASSWORD -->
+                    <PasswordBox x:Name="txtPassword"
+                                 PlaceholderText="Contraseña"
+                                 Background="#F9FAFB"
+                                 BorderBrush="#D1D5DB"
+                                 BorderThickness="1"
+                                 CornerRadius="6"
+                                 Padding="10"/>
+
+                    <!-- BOTÓN -->
+                    <Button Content="Ingresar"
+                            Click="Login_Click"
+                            Background="#3B82F6"
+                            Foreground="White"
+                            Height="40"/>
+
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
 </Window>

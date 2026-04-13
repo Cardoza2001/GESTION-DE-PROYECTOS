@@ -4,10 +4,132 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Padding="20" Spacing="10">
-        <TextBox x:Name="txtNombre" PlaceholderText="Nombre"/>
-        <TextBox x:Name="txtCantidad" PlaceholderText="Cantidad"/>
-        <Button Content="Agregar" Click="Agregar_Click"/>
-        <ListView x:Name="lista"/>
-    </StackPanel>
+    <Grid Background="#F3F4F6">
+
+        <!-- 🔵 HEADER -->
+        <Grid Background="#3B82F6" Height="60" VerticalAlignment="Top">
+
+            <TextBlock Text="Sistema Empresarial"
+                       Foreground="White"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="20,0"/>
+
+            <Button Content="Volver"
+                    Click="Volver_Click"
+                    Background="White"
+                    Foreground="#3B82F6"
+                    BorderBrush="#3B82F6"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="8,4"
+                    HorizontalAlignment="Right"
+                    Margin="0,0,20,0"
+                    VerticalAlignment="Center"/>
+        </Grid>
+
+        <!-- 📊 CONTENIDO -->
+        <StackPanel Margin="20,80,20,20" Spacing="15">
+
+            <!-- TÍTULO -->
+            <TextBlock Text="Gestión de Consumibles"
+                       FontSize="22"
+                       FontWeight="Bold"
+                       Foreground="Black"/>
+
+            <!-- TARJETAS -->
+            <StackPanel Orientation="Horizontal" Spacing="15">
+
+                <!-- TOTAL -->
+                <Border Background="#F9FAFB"
+                        Padding="15"
+                        CornerRadius="10"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1">
+
+                    <Border.Shadow>
+                        <ThemeShadow/>
+                    </Border.Shadow>
+
+                    <StackPanel>
+                        <TextBlock Text="Total" Foreground="Black"/>
+                        <TextBlock Text="0"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="Black"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- ALERTAS -->
+                <Border Background="#F9FAFB"
+                        Padding="15"
+                        CornerRadius="10"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1">
+
+                    <Border.Shadow>
+                        <ThemeShadow/>
+                    </Border.Shadow>
+
+                    <StackPanel>
+                        <TextBlock Text="Alertas" Foreground="Black"/>
+                        <TextBlock Text="0"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="Black"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+            <!-- FORMULARIO -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+
+                <TextBox x:Name="txtNombre"
+                         PlaceholderText="Nombre"
+                         Width="220"
+                         Background="#F9FAFB"
+                         Foreground="Black"
+                         BorderBrush="#D1D5DB"
+                         BorderThickness="1"
+                         CornerRadius="6"
+                         Padding="8"/>
+
+                <TextBox x:Name="txtCantidad"
+                         PlaceholderText="Cantidad"
+                         Width="120"
+                         Background="#F9FAFB"
+                         Foreground="Black"
+                         BorderBrush="#D1D5DB"
+                         BorderThickness="1"
+                         CornerRadius="6"
+                         Padding="8"/>
+
+                <Button Content="Agregar"
+                        Click="Agregar_Click"
+                        Background="#3B82F6"
+                        Foreground="White"
+                        CornerRadius="6"
+                        Padding="10,6"/>
+            </StackPanel>
+
+            <!-- LISTA -->
+            <Border Background="Gray"
+                    CornerRadius="10"
+                    Padding="10"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1">
+
+                <Border.Shadow>
+                    <ThemeShadow/>
+                </Border.Shadow>
+
+                <ListView x:Name="lista"
+                          Height="300"
+                          Foreground="Black"/>
+            </Border>
+
+        </StackPanel>
+    </Grid>
 </Window>

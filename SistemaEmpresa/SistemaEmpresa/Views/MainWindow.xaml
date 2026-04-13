@@ -4,43 +4,142 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <StackPanel Padding="30" Spacing="15">
+    <Grid Background="#F3F4F6">
 
-        <!-- Título -->
-        <TextBlock Text="Sistema Empresa"
-                   FontSize="26"
-                   FontWeight="Bold"/>
+        <!-- 🔵 HEADER -->
+        <Grid Background="#3B82F6" Height="60" VerticalAlignment="Top">
+            <TextBlock Text="Sistema Empresarial"
+                       Foreground="White"
+                       FontSize="20"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Margin="20,0"/>
+        </Grid>
 
-        <!-- Bienvenida -->
-        <TextBlock x:Name="txtBienvenida"
-                   FontSize="16"
-                   Foreground="Gray"/>
+        <!-- CONTENIDO -->
+        <Grid Margin="0,60,0,0">
 
-        <!-- Línea divisoria -->
-        <Border Height="1"
-                Background="Gray"
-                Margin="0,10,0,10"/>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="220"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <!-- Botones -->
+            <!-- 🧭 MENÚ LATERAL -->
+            <StackPanel Background="#E5E7EB" Padding="12">
 
-        <Button x:Name="btnConsumibles"
-                Content="Consumibles"
-                Click="Consumibles_Click"/>
+                <TextBlock Text="Menú"
+                           FontWeight="Bold"
+                           Margin="0,0,0,15"/>
 
-        <Button x:Name="btnHerramientas"
-                Content="Herramientas"
-                Click="Herramientas_Click"/>
+                <!-- BOTONES -->
+                <Button x:Name="btnConsumibles"
+                        Content="Consumibles"
+                        Click="Consumibles_Click"
+                        Margin="0,5"
+                        Background="White"
+                        Foreground="Black"
+                        BorderBrush="#D1D5DB"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10"/>
 
-        <Button x:Name="btnProyectos"
-                Content="Proyectos"
-                Click="Proyectos_Click"/>
+                <Button x:Name="btnHerramientas"
+                        Content="Herramientas"
+                        Click="Herramientas_Click"
+                        Margin="0,5"
+                        Background="White"
+                        Foreground="Black"
+                        BorderBrush="#D1D5DB"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10"/>
 
-        <Button x:Name="btnJefe"
-                Content="Panel del Jefe"
-                Click="Jefe_Click"/>
+                <Button x:Name="btnProyectos"
+                        Content="Proyectos"
+                        Click="Proyectos_Click"
+                        Margin="0,5"
+                        Background="White"
+                        Foreground="Black"
+                        BorderBrush="#D1D5DB"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10"/>
 
-        <Button Content="Cerrar sesión"
-        Click="Logout_Click"/>
+                <Button x:Name="btnJefe"
+                        Content="Panel del Jefe"
+                        Click="Jefe_Click"
+                        Margin="0,5"
+                        Background="White"
+                        Foreground="Black"
+                        BorderBrush="#D1D5DB"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10"/>
 
-    </StackPanel>
+                <Border Height="1" Background="#D1D5DB" Margin="10"/>
+
+                <!-- LOGOUT -->
+                <Button Content="Cerrar sesión"
+                        Click="Logout_Click"
+                        Margin="0,5"
+                        Background="#EF4444"
+                        Foreground="White"
+                        CornerRadius="6"
+                        Padding="10"/>
+            </StackPanel>
+
+            <!-- 📊 CONTENIDO PRINCIPAL -->
+            <StackPanel Grid.Column="1" Padding="20" Spacing="15">
+
+                <!-- BIENVENIDA -->
+                <TextBlock x:Name="txtBienvenida"
+                           FontSize="18"
+                           FontWeight="Bold"
+                           Foreground="Black"/>
+
+                <!-- TARJETAS -->
+                <StackPanel Orientation="Horizontal" Spacing="15">
+
+                    <Border Background="Gray"
+                            Padding="15"
+                            CornerRadius="10">
+                        <StackPanel>
+                            <TextBlock Text="Consumibles"/>
+                            <TextBlock Text="0"
+                                       FontSize="20"
+                                       FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="Gray"
+                            Padding="15"
+                            CornerRadius="10">
+                        <StackPanel>
+                            <TextBlock Text="Herramientas"/>
+                            <TextBlock Text="0"
+                                       FontSize="20"
+                                       FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Background="Gray"
+                            Padding="15"
+                            CornerRadius="10">
+                        <StackPanel>
+                            <TextBlock Text="Proyectos"/>
+                            <TextBlock Text="0"
+                                       FontSize="20"
+                                       FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+
+                </StackPanel>
+
+                <!-- TEXTO -->
+                <TextBlock Text="Selecciona una opción del menú para comenzar."
+                           Foreground="Gray"/>
+
+            </StackPanel>
+        </Grid>
+    </Grid>
 </Window>

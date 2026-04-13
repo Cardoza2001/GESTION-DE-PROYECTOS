@@ -1,58 +1,51 @@
 ﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using SistemaEmpresa.Models;
 using SistemaEmpresa.Services;
+using System;
 using System.Threading.Tasks;
 
 namespace SistemaEmpresa.Views.Proyectos
 {
     public sealed partial class ProyectosWindow : Window
     {
-        public ProyectosWindow()
+        private Usuario _usuario; // 👈 manejo de sesión
+
+        public ProyectosWindow(Usuario usuario)
         {
             this.InitializeComponent();
+            _usuario = usuario;
+
             lista.ItemsSource = DataService.Proyectos;
         }
 
         private async void Crear_Click(object sender, RoutedEventArgs e)
         {
             // Validar nombre
-            if (string.IsNullOrWhiteSpace(txtNombre.Text))
+            if (!ValidationService.EsTextoValido(txtNombre.Text))
             {
-                await MostrarMensaje("El nombre no puede estar vacío");
+                await MostrarMensaje("El nombre es obligatorio");
                 return;
             }
 
             // Validar costo
-            if (!double.TryParse(txtCosto.Text, out double costo))
+            if (!ValidationService.EsDoubleValido(txtCosto.Text, out double costo))
             {
                 await MostrarMensaje("El costo debe ser un número válido");
                 return;
             }
 
-            // Validar negativo
-            if (costo < 0)
+            // Validar costo mayor a 0
+            if (costo <= 0)
             {
-                await MostrarMensaje("El costo no puede ser negativo");
+                await MostrarMensaje("El costo debe ser mayor a 0");
                 return;
             }
 
             // Crear proyecto
             DataService.Proyectos.Add(new Proyecto
             {
-                Nombre = txtNombre.Text,
+                Nombre = txtNombre.Text.Trim(),
                 CostoEstimado = costo,
                 Estado = "Pendiente"
             });
@@ -64,15 +57,26 @@ namespace SistemaEmpresa.Views.Proyectos
 
         private async Task MostrarMensaje(string mensaje)
         {
+            var root = this.Content as FrameworkElement;
+
+            if (root == null) return;
+
             var dialog = new ContentDialog
             {
                 Title = "Error",
                 Content = mensaje,
                 CloseButtonText = "OK",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = root.XamlRoot
             };
 
             await dialog.ShowAsync();
+        }
+
+        private void Volver_Click(object sender, RoutedEventArgs e)
+        {
+            var main = new MainWindow(_usuario); // 👈 regresar a inicio
+            main.Activate();
+            this.Close();
         }
     }
 }
