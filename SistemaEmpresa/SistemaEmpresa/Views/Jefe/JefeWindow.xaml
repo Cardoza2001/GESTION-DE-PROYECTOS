@@ -6,7 +6,6 @@
 
     <Grid Background="#F3F4F6">
 
-        <!-- HEADER -->
         <Grid Background="#3B82F6" Height="60" VerticalAlignment="Top">
             <TextBlock Text="Sistema Empresarial"
                        Foreground="White"
@@ -24,29 +23,25 @@
                     VerticalAlignment="Center"/>
         </Grid>
 
-        <!-- CONTENIDO -->
         <StackPanel Margin="20,80,20,20" Spacing="15">
 
             <TextBlock Text="Panel del Jefe"
                        FontSize="22"
-                       FontWeight="Bold"/>
+                       FontWeight="Bold"
+                       Foreground="Black"/>
 
-            <!-- PROYECTOS -->
-            <TextBlock Text="Proyectos"/>
-            <Border Background="White" CornerRadius="10" Padding="10">
-                <ListView x:Name="listaProyectos" Height="150"/>
-            </Border>
+            <TextBlock Text="Proyectos" FontWeight="Bold"/>
 
-            <Button Content="Aprobar"
+            <ListView x:Name="listaProyectos" Height="200"/>
+
+            <Button Content="Aprobar Proyecto"
                     Click="Aprobar_Click"
                     Background="#3B82F6"
                     Foreground="White"/>
 
-            <!-- TRANSACCIONES -->
-            <TextBlock Text="Transacciones"/>
-            <Border Background="White" CornerRadius="10" Padding="10">
-                <ListView x:Name="listaTransacciones" Height="150"/>
-            </Border>
+            <TextBlock Text="Transacciones" FontWeight="Bold"/>
+
+            <ListView x:Name="listaTransacciones" Height="200"/>
 
         </StackPanel>
     </Grid>

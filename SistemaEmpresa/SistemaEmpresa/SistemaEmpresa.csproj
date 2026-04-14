@@ -13,6 +13,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Views\Admin\UsuariosWindow.xaml" />
     <None Remove="Views\Consumibles\ConsumiblesWindow.xaml" />
     <None Remove="Views\Herramientas\HerramientasWindow.xaml" />
     <None Remove="Views\Jefe\JefeWindow.xaml" />
@@ -44,12 +45,18 @@
     <ProjectCapability Include="Msix" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.5" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Helpers\" />
     <Folder Include="ViewsModels\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Admin\UsuariosWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Login\LoginWindow.xaml">

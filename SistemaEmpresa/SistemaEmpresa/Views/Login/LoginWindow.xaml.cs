@@ -1,9 +1,8 @@
-using Microsoft.UI.Xaml;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SistemaEmpresa.Models;
 using SistemaEmpresa.Services;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace SistemaEmpresa.Views.Login
@@ -17,26 +16,28 @@ namespace SistemaEmpresa.Views.Login
 
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
-            // Validar campos vac�os
+            // 🔐 Validar campos vacíos
             if (!ValidationService.EsTextoValido(txtUsuario.Text) ||
                 !ValidationService.EsTextoValido(txtPassword.Password))
             {
-                await MostrarMensaje("Usuario y contrase�a son obligatorios");
+                await MostrarMensaje("Usuario y contraseña son obligatorios");
                 return;
             }
 
-            var usuario = DataService.Usuarios.FirstOrDefault(u =>
-                u.Nombre == txtUsuario.Text.Trim() &&
-                u.Password == txtPassword.Password);
+            // 🔥 LOGIN REAL CON SQLITE
+            var usuario = AuthService.Login(
+                txtUsuario.Text.Trim(),
+                txtPassword.Password
+            );
 
-            // Validar credenciales incorrectas
+            // ❌ Credenciales incorrectas
             if (usuario == null)
             {
-                await MostrarMensaje("Usuario o contrase�a incorrectos");
+                await MostrarMensaje("Usuario o contraseña incorrectos o usuario inactivo");
                 return;
             }
 
-            // Login correcto
+            // ✅ Login correcto
             MainWindow main = new MainWindow(usuario);
             main.Activate();
             this.Close();
@@ -44,13 +45,16 @@ namespace SistemaEmpresa.Views.Login
 
         private async Task MostrarMensaje(string mensaje)
         {
+            var root = this.Content as FrameworkElement;
+
+            if (root == null) return;
+
             var dialog = new ContentDialog
             {
                 Title = "Login",
                 Content = mensaje,
                 CloseButtonText = "OK",
-                XamlRoot = (this.Content as FrameworkElement)!
-                            .XamlRoot
+                XamlRoot = root.XamlRoot
             };
 
             await dialog.ShowAsync();

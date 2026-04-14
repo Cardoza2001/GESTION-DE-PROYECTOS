@@ -1,5 +1,6 @@
 ﻿using Microsoft.UI.Xaml;
 using SistemaEmpresa.Views.Login;
+using SistemaEmpresa.Database;
 
 namespace SistemaEmpresa
 {
@@ -14,6 +15,7 @@ namespace SistemaEmpresa
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            DatabaseInitializer.Initialize();
             m_window = new LoginWindow();
             m_window.Activate();
         }

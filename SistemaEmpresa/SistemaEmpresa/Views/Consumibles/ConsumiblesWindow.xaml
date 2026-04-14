@@ -6,9 +6,8 @@
 
     <Grid Background="#F3F4F6">
 
-        <!-- 🔵 HEADER -->
+        <!-- HEADER -->
         <Grid Background="#3B82F6" Height="60" VerticalAlignment="Top">
-
             <TextBlock Text="Sistema Empresarial"
                        Foreground="White"
                        FontSize="20"
@@ -20,114 +19,49 @@
                     Click="Volver_Click"
                     Background="White"
                     Foreground="#3B82F6"
-                    BorderBrush="#3B82F6"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Padding="8,4"
                     HorizontalAlignment="Right"
                     Margin="0,0,20,0"
                     VerticalAlignment="Center"/>
         </Grid>
 
-        <!-- 📊 CONTENIDO -->
         <StackPanel Margin="20,80,20,20" Spacing="15">
 
-            <!-- TÍTULO -->
             <TextBlock Text="Gestión de Consumibles"
                        FontSize="22"
                        FontWeight="Bold"
                        Foreground="Black"/>
 
-            <!-- TARJETAS -->
-            <StackPanel Orientation="Horizontal" Spacing="15">
-
-                <!-- TOTAL -->
-                <Border Background="#F9FAFB"
-                        Padding="15"
-                        CornerRadius="10"
-                        BorderBrush="#E5E7EB"
-                        BorderThickness="1">
-
-                    <Border.Shadow>
-                        <ThemeShadow/>
-                    </Border.Shadow>
-
-                    <StackPanel>
-                        <TextBlock Text="Total" Foreground="Black"/>
-                        <TextBlock Text="0"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Foreground="Black"/>
-                    </StackPanel>
-                </Border>
-
-                <!-- ALERTAS -->
-                <Border Background="#F9FAFB"
-                        Padding="15"
-                        CornerRadius="10"
-                        BorderBrush="#E5E7EB"
-                        BorderThickness="1">
-
-                    <Border.Shadow>
-                        <ThemeShadow/>
-                    </Border.Shadow>
-
-                    <StackPanel>
-                        <TextBlock Text="Alertas" Foreground="Black"/>
-                        <TextBlock Text="0"
-                                   FontSize="20"
-                                   FontWeight="Bold"
-                                   Foreground="Black"/>
-                    </StackPanel>
-                </Border>
-
-            </StackPanel>
-
-            <!-- FORMULARIO -->
             <StackPanel Orientation="Horizontal" Spacing="10">
-
-                <TextBox x:Name="txtNombre"
-                         PlaceholderText="Nombre"
-                         Width="220"
-                         Background="#F9FAFB"
-                         Foreground="Black"
-                         BorderBrush="#D1D5DB"
-                         BorderThickness="1"
-                         CornerRadius="6"
-                         Padding="8"/>
-
-                <TextBox x:Name="txtCantidad"
-                         PlaceholderText="Cantidad"
-                         Width="120"
-                         Background="#F9FAFB"
-                         Foreground="Black"
-                         BorderBrush="#D1D5DB"
-                         BorderThickness="1"
-                         CornerRadius="6"
-                         Padding="8"/>
-
-                <Button Content="Agregar"
-                        Click="Agregar_Click"
-                        Background="#3B82F6"
-                        Foreground="White"
-                        CornerRadius="6"
-                        Padding="10,6"/>
+                <TextBox x:Name="txtNombre" PlaceholderText="Nombre" Width="220" Foreground="Black"/>
+                <TextBox x:Name="txtCantidad" PlaceholderText="Cantidad" Width="120" Foreground="Black"/>
+                <Button Content="Agregar" Click="Agregar_Click"
+                        Background="#3B82F6" Foreground="White"/>
             </StackPanel>
 
-            <!-- LISTA -->
-            <Border Background="Gray"
-                    CornerRadius="10"
-                    Padding="10"
-                    BorderBrush="#E5E7EB"
-                    BorderThickness="1">
+            <Border Background="White" CornerRadius="10" Padding="10">
+                <ListView x:Name="lista" Height="300">
 
-                <Border.Shadow>
-                    <ThemeShadow/>
-                </Border.Shadow>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#F9FAFB" Padding="10" Margin="5" CornerRadius="8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Nombre}" FontWeight="Bold" Foreground="Black"/>
 
-                <ListView x:Name="lista"
-                          Height="300"
-                          Foreground="Black"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Cantidad: " Foreground="Black"/>
+                                        <TextBlock Text="{Binding Cantidad}" Foreground="Black"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Mínimo: " Foreground="Black"/>
+                                        <TextBlock Text="{Binding NivelMinimo}" Foreground="Black"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+
+                </ListView>
             </Border>
 
         </StackPanel>

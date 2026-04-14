@@ -8,6 +8,7 @@ namespace SistemaEmpresa.Models
 {
     public class Herramienta
     {
+        public int Id { get; set; }
         public string? Nombre { get; set; }
         public int CantidadTotal { get; set; }
         public int CantidadDisponible { get; set; }

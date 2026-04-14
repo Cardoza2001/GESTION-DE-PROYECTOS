@@ -8,8 +8,13 @@ namespace SistemaEmpresa.Models
 {
     public class Usuario
     {
-        public string? Nombre { get; set; }
-        public string? Rol { get; set; } // Admin, Jefe, Empleado
-        public string? Password { get; set; }
+        public int Id { get; set; }             // clave primaria
+        public string Nombre { get; set; } = "";
+        public string Password { get; set; } = "";
+
+        public int RolId { get; set; }          // relación BD
+        public string Rol { get; set; } = "";   // texto (Admin, etc.)
+
+        public bool Activo { get; set; }        // control de acceso
     }
 }

@@ -24,11 +24,12 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- 🧭 MENÚ LATERAL -->
+            <!-- 🧭 MENÚ -->
             <StackPanel Background="#E5E7EB" Padding="12">
 
                 <TextBlock Text="Menú"
                            FontWeight="Bold"
+                           Foreground="Black"
                            Margin="0,0,0,15"/>
 
                 <!-- BOTONES -->
@@ -41,7 +42,9 @@
                         BorderBrush="#D1D5DB"
                         BorderThickness="1"
                         CornerRadius="6"
-                        Padding="10"/>
+                        Padding="10"
+                        PointerEntered="MenuHover"
+                        PointerExited="MenuLeave"/>
 
                 <Button x:Name="btnHerramientas"
                         Content="Herramientas"
@@ -52,7 +55,9 @@
                         BorderBrush="#D1D5DB"
                         BorderThickness="1"
                         CornerRadius="6"
-                        Padding="10"/>
+                        Padding="10"
+                        PointerEntered="MenuHover"
+                        PointerExited="MenuLeave"/>
 
                 <Button x:Name="btnProyectos"
                         Content="Proyectos"
@@ -63,7 +68,9 @@
                         BorderBrush="#D1D5DB"
                         BorderThickness="1"
                         CornerRadius="6"
-                        Padding="10"/>
+                        Padding="10"
+                        PointerEntered="MenuHover"
+                        PointerExited="MenuLeave"/>
 
                 <Button x:Name="btnJefe"
                         Content="Panel del Jefe"
@@ -74,7 +81,23 @@
                         BorderBrush="#D1D5DB"
                         BorderThickness="1"
                         CornerRadius="6"
-                        Padding="10"/>
+                        Padding="10"
+                        PointerEntered="MenuHover"
+                        PointerExited="MenuLeave"/>
+
+                <!-- 🔥 NUEVO BOTÓN ADMIN -->
+                <Button x:Name="btnUsuarios"
+                        Content="Usuarios"
+                        Click="Usuarios_Click"
+                        Margin="0,5"
+                        Background="White"
+                        Foreground="Black"
+                        BorderBrush="#D1D5DB"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="10"
+                        PointerEntered="MenuHover"
+                        PointerExited="MenuLeave"/>
 
                 <Border Height="1" Background="#D1D5DB" Margin="10"/>
 
@@ -88,10 +111,9 @@
                         Padding="10"/>
             </StackPanel>
 
-            <!-- 📊 CONTENIDO PRINCIPAL -->
+            <!-- 📊 CONTENIDO -->
             <StackPanel Grid.Column="1" Padding="20" Spacing="15">
 
-                <!-- BIENVENIDA -->
                 <TextBlock x:Name="txtBienvenida"
                            FontSize="18"
                            FontWeight="Bold"
@@ -100,42 +122,38 @@
                 <!-- TARJETAS -->
                 <StackPanel Orientation="Horizontal" Spacing="15">
 
-                    <Border Background="Gray"
-                            Padding="15"
-                            CornerRadius="10">
+                    <Border Background="#E0F2FE" Padding="15" CornerRadius="10">
                         <StackPanel>
-                            <TextBlock Text="Consumibles"/>
+                            <TextBlock Text="Consumibles" Foreground="Black"/>
                             <TextBlock Text="0"
                                        FontSize="20"
-                                       FontWeight="Bold"/>
+                                       FontWeight="Bold"
+                                       Foreground="Black"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Background="Gray"
-                            Padding="15"
-                            CornerRadius="10">
+                    <Border Background="#DCFCE7" Padding="15" CornerRadius="10">
                         <StackPanel>
-                            <TextBlock Text="Herramientas"/>
+                            <TextBlock Text="Herramientas" Foreground="Black"/>
                             <TextBlock Text="0"
                                        FontSize="20"
-                                       FontWeight="Bold"/>
+                                       FontWeight="Bold"
+                                       Foreground="Black"/>
                         </StackPanel>
                     </Border>
 
-                    <Border Background="Gray"
-                            Padding="15"
-                            CornerRadius="10">
+                    <Border Background="#FEF3C7" Padding="15" CornerRadius="10">
                         <StackPanel>
-                            <TextBlock Text="Proyectos"/>
+                            <TextBlock Text="Proyectos" Foreground="Black"/>
                             <TextBlock Text="0"
                                        FontSize="20"
-                                       FontWeight="Bold"/>
+                                       FontWeight="Bold"
+                                       Foreground="Black"/>
                         </StackPanel>
                     </Border>
 
                 </StackPanel>
 
-                <!-- TEXTO -->
                 <TextBlock Text="Selecciona una opción del menú para comenzar."
                            Foreground="Gray"/>
 
