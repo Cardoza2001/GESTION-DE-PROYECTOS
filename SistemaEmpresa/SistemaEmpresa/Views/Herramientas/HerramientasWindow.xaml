@@ -74,6 +74,11 @@
                         Click="Agregar_Click"
                         Background="#3B82F6"
                         Foreground="White"/>
+
+                <Button Content="Eliminar"
+                        Click="Eliminar_Click"
+                        Background="#EF4444"
+                        Foreground="White"/>
             </StackPanel>
 
             <!-- LISTA -->

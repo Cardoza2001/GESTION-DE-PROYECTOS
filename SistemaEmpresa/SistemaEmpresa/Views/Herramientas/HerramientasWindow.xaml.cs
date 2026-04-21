@@ -6,7 +6,6 @@ using SistemaEmpresa.Models;
 using SistemaEmpresa.Services;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SistemaEmpresa.Views.Herramientas
 {
@@ -19,97 +18,193 @@ namespace SistemaEmpresa.Views.Herramientas
             this.InitializeComponent();
             _usuario = usuario;
 
+            this.Activated += (s, e) =>
+            {
+                if (this.Content is FrameworkElement root)
+                {
+                    DialogService.Initialize(root.XamlRoot);
+                }
+            };
+
             CargarHerramientas();
         }
 
-        // 🔥 CARGAR DESDE SQLITE
-        private void CargarHerramientas()
+        private async void CargarHerramientas()
         {
             var listaHerramientas = new List<Herramienta>();
 
-            using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
-            connection.Open();
-
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = "SELECT ID, NOMBRE, CANTIDAD_TOTAL, CANTIDAD_DISPONIBLE FROM HERRAMIENTAS";
-
-            using var reader = cmd.ExecuteReader();
-
-            while (reader.Read())
+            try
             {
-                listaHerramientas.Add(new Herramienta
-                {
-                    Id = reader.GetInt32(0),
-                    Nombre = reader.GetString(1),
-                    CantidadTotal = reader.GetInt32(2),
-                    CantidadDisponible = reader.GetInt32(3)
-                });
-            }
+                using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
+                connection.Open();
 
-            lista.ItemsSource = listaHerramientas;
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "SELECT ID, NOMBRE, CANTIDAD_TOTAL, CANTIDAD_DISPONIBLE, PRESTADAS, PERDIDAS FROM HERRAMIENTAS";
+
+                using var reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    listaHerramientas.Add(new Herramienta
+                    {
+                        Id = reader.GetInt32(0),
+                        Nombre = reader.GetString(1),
+                        CantidadTotal = reader.GetInt32(2),
+                        CantidadDisponible = reader.GetInt32(3),
+                        Prestadas = reader.GetInt32(4),
+                        Perdidas = reader.GetInt32(5)
+                    });
+                }
+
+                lista.ItemsSource = listaHerramientas;
+            }
+            catch (Exception ex)
+            {
+                await DialogService.ShowMessage("Error al cargar herramientas:\n" + ex.Message);
+            }
         }
 
         private async void Agregar_Click(object sender, RoutedEventArgs e)
         {
-            // 🔐 Validar nombre
-            if (!ValidationService.EsTextoValido(txtNombre.Text))
+            string nombre = txtNombre.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(nombre))
             {
-                await MostrarMensaje("El nombre es obligatorio");
+                await DialogService.ShowMessage("El nombre es obligatorio");
                 return;
             }
 
-            // 🔢 Validar cantidad
-            if (!ValidationService.EsEnteroValido(txtCantidad.Text, out int cantidad))
+            if (!int.TryParse(txtCantidad.Text, out int cantidad) || cantidad <= 0)
             {
-                await MostrarMensaje("La cantidad debe ser un número válido");
+                await DialogService.ShowMessage("Cantidad inválida");
                 return;
             }
 
-            // 🚫 Validar mayor a 0
-            if (cantidad <= 0)
-            {
-                await MostrarMensaje("La cantidad debe ser mayor a 0");
-                return;
-            }
-
-            // 💾 INSERT EN SQLITE
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
 
+            var checkCmd = connection.CreateCommand();
+            checkCmd.CommandText = @"
+        SELECT COUNT(*) 
+        FROM HERRAMIENTAS 
+        WHERE NOMBRE = @nombre COLLATE NOCASE
+    ";
+            checkCmd.Parameters.AddWithValue("@nombre", nombre);
+
+            long existe = Convert.ToInt64(checkCmd.ExecuteScalar());
+
+            if (existe > 0)
+            {
+                await DialogService.ShowMessage("La herramienta ya existe");
+                return;
+            }
+
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"
-                INSERT INTO HERRAMIENTAS (NOMBRE, CANTIDAD_TOTAL, CANTIDAD_DISPONIBLE)
-                VALUES (@nombre, @total, @disponible)
-            ";
+        INSERT INTO HERRAMIENTAS (NOMBRE, CANTIDAD_TOTAL, CANTIDAD_DISPONIBLE)
+        VALUES (@nombre, @total, @disponible)
+    ";
 
-            cmd.Parameters.AddWithValue("@nombre", txtNombre.Text.Trim());
+            cmd.Parameters.AddWithValue("@nombre", nombre);
             cmd.Parameters.AddWithValue("@total", cantidad);
             cmd.Parameters.AddWithValue("@disponible", cantidad);
 
-            cmd.ExecuteNonQuery();
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (SqliteException ex)
+            {
+                if (ex.SqliteErrorCode == 19)
+                {
+                    await DialogService.ShowMessage("La herramienta ya existe");
+                }
+                else
+                {
+                    await DialogService.ShowMessage("Error en base de datos: " + ex.Message);
+                }
+                return;
+            }
 
-            // 🔄 RECARGAR LISTA
+            await DialogService.ShowMessage("Herramienta agregada correctamente");
+
             CargarHerramientas();
 
-            // 🧹 Limpiar campos
             txtNombre.Text = "";
             txtCantidad.Text = "";
         }
 
-        private async Task MostrarMensaje(string mensaje)
+        private async void Eliminar_Click(object sender, RoutedEventArgs e)
         {
-            var root = this.Content as FrameworkElement;
-            if (root == null) return;
+            var seleccionada = lista.SelectedItem as Herramienta;
 
-            var dialog = new ContentDialog
+            if (seleccionada == null)
             {
-                Title = "Sistema",
-                Content = mensaje,
-                CloseButtonText = "OK",
-                XamlRoot = root.XamlRoot
-            };
+                await DialogService.ShowMessage("Selecciona una herramienta");
+                return;
+            }
 
-            await dialog.ShowAsync();
+            if (!int.TryParse(txtCantidad.Text, out int cantidad) || cantidad <= 0)
+            {
+                await DialogService.ShowMessage("Cantidad inválida");
+                return;
+            }
+
+            if (cantidad > seleccionada.CantidadDisponible)
+            {
+                await DialogService.ShowMessage("No puedes eliminar más de lo disponible");
+                return;
+            }
+
+            bool confirmar = await DialogService.Confirm(
+                $"¿Eliminar {cantidad} unidad(es) de '{seleccionada.Nombre}'?"
+            );
+
+            if (!confirmar) return;
+
+            try
+            {
+                using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+
+                if (seleccionada.CantidadDisponible - cantidad == 0)
+                {
+                    cmd.CommandText = "DELETE FROM HERRAMIENTAS WHERE ID = @id";
+                    cmd.Parameters.AddWithValue("@id", seleccionada.Id);
+                }
+                else
+                {
+                    cmd.CommandText = @"
+                UPDATE HERRAMIENTAS
+                SET 
+                    CANTIDAD_DISPONIBLE = CANTIDAD_DISPONIBLE - @cantidad,
+                    CANTIDAD_TOTAL = CANTIDAD_TOTAL - @cantidad
+                WHERE ID = @id
+            ";
+
+                    cmd.Parameters.AddWithValue("@cantidad", cantidad);
+                    cmd.Parameters.AddWithValue("@id", seleccionada.Id);
+                }
+
+                int rows = cmd.ExecuteNonQuery();
+
+                if (rows == 0)
+                {
+                    await DialogService.ShowMessage("No se pudo eliminar");
+                    return;
+                }
+
+                await DialogService.ShowMessage("Operación realizada");
+
+                CargarHerramientas();
+                txtCantidad.Text = "";
+            }
+            catch (Exception ex)
+            {
+                await DialogService.ShowMessage("Error: " + ex.Message);
+            }
         }
 
         private void Volver_Click(object sender, RoutedEventArgs e)

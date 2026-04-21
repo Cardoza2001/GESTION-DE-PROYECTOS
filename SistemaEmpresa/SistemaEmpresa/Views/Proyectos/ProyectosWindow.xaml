@@ -6,6 +6,7 @@
 
     <Grid Background="#F3F4F6">
 
+        <!-- 🔵 HEADER -->
         <Grid Background="#3B82F6" Height="60" VerticalAlignment="Top">
             <TextBlock Text="Sistema Empresarial"
                        Foreground="White"
@@ -23,44 +24,109 @@
                     VerticalAlignment="Center"/>
         </Grid>
 
+        <!-- 📊 CONTENIDO -->
         <StackPanel Margin="20,80,20,20" Spacing="15">
 
+            <!-- TÍTULO -->
             <TextBlock Text="Gestión de Proyectos"
                        FontSize="22"
                        FontWeight="Bold"
                        Foreground="Black"/>
 
-            <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBox x:Name="txtNombre" PlaceholderText="Nombre" Width="220" Foreground="Black"/>
-                <TextBox x:Name="txtCosto" PlaceholderText="Costo" Width="120" Foreground="Black"/>
-                <Button Content="Crear" Click="Crear_Click"
-                        Background="#3B82F6" Foreground="White"/>
+            <!-- TARJETAS -->
+            <StackPanel Orientation="Horizontal" Spacing="15">
+
+                <Border Background="#E0F2FE" Padding="15" CornerRadius="10">
+                    <StackPanel>
+                        <TextBlock Text="Total proyectos" Foreground="Black"/>
+                        <TextBlock Text="0"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="Black"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#DCFCE7" Padding="15" CornerRadius="10">
+                    <StackPanel>
+                        <TextBlock Text="Pendientes" Foreground="Black"/>
+                        <TextBlock Text="0"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="Black"/>
+                    </StackPanel>
+                </Border>
+
             </StackPanel>
 
+            <!-- FORMULARIO -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+
+                <TextBox x:Name="txtNombre"
+                         PlaceholderText="Nombre"
+                         Width="220"
+                         Foreground="Black"/>
+
+                <TextBox x:Name="txtCosto"
+                         PlaceholderText="Costo"
+                         Width="120"
+                         Foreground="Black"/>
+
+                <Button Content="Crear"
+                        Click="Crear_Click"
+                        Background="#3B82F6"
+                        Foreground="White"/>
+
+                <!-- 🔴 BOTÓN ELIMINAR -->
+                <Button Content="Eliminar"
+                        Click="Eliminar_Click"
+                        Background="#EF4444"
+                        Foreground="White"/>
+            </StackPanel>
+
+            <!-- LISTA -->
             <Border Background="White" CornerRadius="10" Padding="10">
+
                 <ListView x:Name="lista" Height="300">
 
                     <ListView.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="#F9FAFB" Padding="10" Margin="5" CornerRadius="8">
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Nombre}" FontWeight="Bold" Foreground="Black"/>
 
+                            <Border Background="#F9FAFB"
+                                    Padding="10"
+                                    Margin="5"
+                                    CornerRadius="8"
+                                    BorderBrush="#E5E7EB"
+                                    BorderThickness="1">
+
+                                <StackPanel>
+
+                                    <!-- Nombre -->
+                                    <TextBlock Text="{Binding Nombre}"
+                                               FontWeight="Bold"
+                                               FontSize="16"
+                                               Foreground="Black"/>
+
+                                    <!-- Costo -->
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Costo: " Foreground="Black"/>
                                         <TextBlock Text="{Binding CostoEstimado}" Foreground="Black"/>
                                     </StackPanel>
 
+                                    <!-- Estado -->
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Estado: " Foreground="Black"/>
                                         <TextBlock Text="{Binding Estado}" Foreground="Black"/>
                                     </StackPanel>
+
                                 </StackPanel>
+
                             </Border>
+
                         </DataTemplate>
                     </ListView.ItemTemplate>
 
                 </ListView>
+
             </Border>
 
         </StackPanel>

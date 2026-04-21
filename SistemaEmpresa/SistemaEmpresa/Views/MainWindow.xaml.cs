@@ -1,13 +1,17 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.Data.Sqlite;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using SistemaEmpresa.Database;
+using SistemaEmpresa.Models;
+using SistemaEmpresa.Services;
+using SistemaEmpresa.Views.Admin;
 using SistemaEmpresa.Views.Consumibles;
 using SistemaEmpresa.Views.Herramientas;
 using SistemaEmpresa.Views.Jefe;
 using SistemaEmpresa.Views.Proyectos;
-using SistemaEmpresa.Views.Admin;
-using SistemaEmpresa.Models;
+using System;
 
 namespace SistemaEmpresa.Views
 {
@@ -21,33 +25,66 @@ namespace SistemaEmpresa.Views
 
             usuarioActual = usuario;
 
+            this.Activated += MainWindow_Activated;
+
             txtBienvenida.Text = $"Bienvenido: {usuarioActual.Nombre} ({usuarioActual.Rol})";
 
             ConfigurarPermisos();
+            CargarDashboard();
+        }
+
+        private void MainWindow_Activated(object sender, WindowActivatedEventArgs e)
+        {
+            if (this.Content is FrameworkElement root)
+                DialogService.Initialize(root.XamlRoot);
         }
 
         private void ConfigurarPermisos()
         {
-            // 🔒 Empleado
             if (usuarioActual.Rol == "Empleado")
             {
                 btnJefe.Visibility = Visibility.Collapsed;
                 btnUsuarios.Visibility = Visibility.Collapsed;
             }
 
-            // 🔧 Jefe
             if (usuarioActual.Rol == "Jefe")
             {
                 btnHerramientas.Visibility = Visibility.Collapsed;
                 btnUsuarios.Visibility = Visibility.Collapsed;
             }
-
-            // 👑 Admin → acceso total
         }
 
-        // ===============================
-        // 🔥 NAVEGACIÓN
-        // ===============================
+        private void CargarDashboard()
+        {
+            try
+            {
+                using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
+                connection.Open();
+
+                txtTotalConsumibles.Text = ObtenerConteo(connection, "CONSUMIBLES").ToString();
+                txtTotalHerramientas.Text = ObtenerConteo(connection, "HERRAMIENTAS").ToString();
+                txtTotalProyectos.Text = ObtenerConteo(connection, "PROYECTOS").ToString();
+            }
+            catch
+            {
+                txtTotalConsumibles.Text = "0";
+                txtTotalHerramientas.Text = "0";
+                txtTotalProyectos.Text = "0";
+            }
+        }
+
+        private int ObtenerConteo(SqliteConnection connection, string tabla)
+        {
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = $"SELECT COUNT(*) FROM {tabla}";
+
+            var result = cmd.ExecuteScalar();
+
+            if (result == null || result == DBNull.Value)
+                return 0;
+
+            return Convert.ToInt32(result);
+        }
 
         private void Consumibles_Click(object sender, RoutedEventArgs e)
         {
@@ -81,20 +118,17 @@ namespace SistemaEmpresa.Views
 
         private void Logout_Click(object sender, RoutedEventArgs e)
         {
-            var login = new SistemaEmpresa.Views.Login.LoginWindow();
-            login.Activate();
+            new Login.LoginWindow().Activate();
             this.Close();
         }
-
-        // ===============================
-        // 🎨 HOVER EFECTO MENÚ
-        // ===============================
 
         private void MenuHover(object sender, PointerRoutedEventArgs e)
         {
             if (sender is Button btn)
             {
-                btn.Background = new SolidColorBrush(Windows.UI.Color.FromArgb(255, 224, 242, 254)); // azul claro
+                btn.Background = new SolidColorBrush(
+                    Microsoft.UI.ColorHelper.FromArgb(255, 224, 242, 254)
+                );
             }
         }
 
@@ -102,9 +136,7 @@ namespace SistemaEmpresa.Views
         {
             if (sender is Button btn)
             {
-                btn.Background = new SolidColorBrush(
-                    Microsoft.UI.Colors.White
-                );
+                btn.Background = new SolidColorBrush(Microsoft.UI.Colors.White);
             }
         }
     }

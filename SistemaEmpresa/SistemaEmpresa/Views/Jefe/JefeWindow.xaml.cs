@@ -1,11 +1,18 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using SistemaEmpresa.Database;
 using SistemaEmpresa.Models;
+using SistemaEmpresa.Services;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
 
 namespace SistemaEmpresa.Views.Jefe
 {
@@ -18,11 +25,16 @@ namespace SistemaEmpresa.Views.Jefe
             this.InitializeComponent();
             _usuario = usuario;
 
+            this.Activated += (s, e) =>
+            {
+                if (this.Content is FrameworkElement root)
+                    DialogService.Initialize(root.XamlRoot);
+            };
+
             CargarProyectos();
             CargarTransacciones();
         }
 
-        // 🔥 CARGAR PROYECTOS
         private void CargarProyectos()
         {
             var lista = new List<Proyecto>();
@@ -49,22 +61,31 @@ namespace SistemaEmpresa.Views.Jefe
             listaProyectos.ItemsSource = lista;
         }
 
-        // 🔥 CARGAR TRANSACCIONES
         private void CargarTransacciones()
         {
-            var lista = new List<string>();
+            var lista = new List<Transaccion>();
 
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
 
             var cmd = connection.CreateCommand();
-            cmd.CommandText = "SELECT TIPO, DESCRIPCION, MONTO, FECHA FROM TRANSACCIONES";
+            cmd.CommandText = @"
+                SELECT TIPO, DESCRIPCION, MONTO, FECHA 
+                FROM TRANSACCIONES 
+                ORDER BY ID DESC
+            ";
 
             using var reader = cmd.ExecuteReader();
 
             while (reader.Read())
             {
-                lista.Add($"{reader.GetString(0)} | {reader.GetString(1)} | ${reader.GetDouble(2)} | {reader.GetString(3)}");
+                lista.Add(new Transaccion
+                {
+                    Tipo = reader.GetString(0),
+                    Descripcion = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                    Monto = reader.GetDouble(2),
+                    Fecha = reader.GetString(3)
+                });
             }
 
             listaTransacciones.ItemsSource = lista;
@@ -74,85 +95,204 @@ namespace SistemaEmpresa.Views.Jefe
         {
             var p = listaProyectos.SelectedItem as Proyecto;
 
-            // 🔐 Validar selección
             if (p == null)
             {
-                await MostrarMensaje("Selecciona un proyecto");
+                await DialogService.ShowMessage("Selecciona un proyecto");
                 return;
             }
 
-            // 🚫 Ya aprobado
             if (p.Estado == "Aprobado")
             {
-                await MostrarMensaje("El proyecto ya fue aprobado");
+                await DialogService.ShowMessage("El proyecto ya está aprobado");
                 return;
             }
+
+            bool confirmar = await DialogService.Confirm($"¿Aprobar el proyecto '{p.Nombre}'?");
+            if (!confirmar) return;
 
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
 
-            // 🔧 VALIDAR RECURSOS (simple: herramientas disponibles > 0)
-            var validarCmd = connection.CreateCommand();
-            validarCmd.CommandText = "SELECT SUM(CANTIDAD_DISPONIBLE) FROM HERRAMIENTAS";
+            var validar = connection.CreateCommand();
+            validar.CommandText = "SELECT SUM(CANTIDAD_DISPONIBLE) FROM HERRAMIENTAS";
 
-            var total = validarCmd.ExecuteScalar();
+            var total = validar.ExecuteScalar();
 
-            if (total == null || total == DBNull.Value || (long)total <= 0)
+            if (total == null || total == DBNull.Value || Convert.ToInt64(total) <= 0)
             {
-                await MostrarMensaje("No hay herramientas disponibles");
+                await DialogService.ShowMessage("No hay herramientas disponibles");
                 return;
             }
 
-            // ✅ APROBAR PROYECTO
-            var aprobarCmd = connection.CreateCommand();
-            aprobarCmd.CommandText = @"
-                UPDATE PROYECTOS
-                SET ESTADO = 'Aprobado'
-                WHERE ID = @id
-            ";
+            using var transaction = connection.BeginTransaction();
 
-            aprobarCmd.Parameters.AddWithValue("@id", p.Id);
-            aprobarCmd.ExecuteNonQuery();
+            try
+            {
+                var update = connection.CreateCommand();
+                update.Transaction = transaction;
+                update.CommandText = "UPDATE PROYECTOS SET ESTADO = 'Aprobado' WHERE ID = @id";
+                update.Parameters.AddWithValue("@id", p.Id);
 
-            // 💸 REGISTRAR TRANSACCIÓN
-            var transCmd = connection.CreateCommand();
-            transCmd.CommandText = @"
-                INSERT INTO TRANSACCIONES (TIPO, DESCRIPCION, MONTO)
-                VALUES ('Gasto', @desc, @monto)
-            ";
+                int rows = update.ExecuteNonQuery();
 
-            transCmd.Parameters.AddWithValue("@desc", "Aprobación de proyecto: " + p.Nombre);
-            transCmd.Parameters.AddWithValue("@monto", p.CostoEstimado);
+                if (rows == 0)
+                {
+                    await DialogService.ShowMessage("No se pudo actualizar el proyecto");
+                    transaction.Rollback();
+                    return;
+                }
 
-            transCmd.ExecuteNonQuery();
+                var trans = connection.CreateCommand();
+                trans.Transaction = transaction;
+                trans.CommandText = @"
+                    INSERT INTO TRANSACCIONES (TIPO, DESCRIPCION, MONTO)
+                    VALUES ('Egreso', @desc, @monto)
+                ";
 
-            await MostrarMensaje("Proyecto aprobado correctamente");
+                trans.Parameters.AddWithValue("@desc", $"Proyecto aprobado: {p.Nombre}");
+                trans.Parameters.AddWithValue("@monto", p.CostoEstimado);
 
-            // 🔄 RECARGAR DATOS
+                trans.ExecuteNonQuery();
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                await DialogService.ShowMessage("Error: " + ex.Message);
+                return;
+            }
+
+            await DialogService.ShowMessage("Proyecto aprobado");
+
             CargarProyectos();
             CargarTransacciones();
         }
 
-        private async Task MostrarMensaje(string mensaje)
+        private async void Rechazar_Click(object sender, RoutedEventArgs e)
         {
-            var root = this.Content as FrameworkElement;
-            if (root == null) return;
+            var p = listaProyectos.SelectedItem as Proyecto;
 
-            var dialog = new ContentDialog
+            if (p == null)
             {
-                Title = "Sistema",
-                Content = mensaje,
-                CloseButtonText = "OK",
-                XamlRoot = root.XamlRoot
-            };
+                await DialogService.ShowMessage("Selecciona un proyecto");
+                return;
+            }
 
-            await dialog.ShowAsync();
+            if (p.Estado == "Rechazado")
+            {
+                await DialogService.ShowMessage("Ya está rechazado");
+                return;
+            }
+
+            bool confirmar = await DialogService.Confirm($"¿Rechazar el proyecto '{p.Nombre}'?");
+            if (!confirmar) return;
+
+            using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
+            connection.Open();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = "UPDATE PROYECTOS SET ESTADO = 'Rechazado' WHERE ID = @id";
+            cmd.Parameters.AddWithValue("@id", p.Id);
+
+            int rows = cmd.ExecuteNonQuery();
+
+            if (rows == 0)
+            {
+                await DialogService.ShowMessage("No se pudo actualizar el proyecto");
+                return;
+            }
+
+            await DialogService.ShowMessage("Proyecto rechazado");
+
+            CargarProyectos();
+        }
+
+        private async void GenerarPDF_Click(object sender, RoutedEventArgs e)
+        {
+            var proyecto = listaProyectos.SelectedItem as Proyecto;
+
+            if (proyecto == null)
+            {
+                await DialogService.ShowMessage("Selecciona un proyecto");
+                return;
+            }
+
+            var picker = new FileSavePicker();
+            InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(this));
+
+            picker.FileTypeChoices.Add("PDF", new List<string> { ".pdf" });
+            picker.SuggestedFileName = $"Reporte_{proyecto.Nombre}";
+
+            var file = await picker.PickSaveFileAsync();
+            if (file == null) return;
+
+            var transacciones = new List<Transaccion>();
+
+            using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
+            connection.Open();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = @"
+                SELECT TIPO, DESCRIPCION, MONTO, FECHA
+                FROM TRANSACCIONES
+                WHERE DESCRIPCION LIKE @nombre
+            ";
+
+            cmd.Parameters.AddWithValue("@nombre", "%" + proyecto.Nombre + "%");
+
+            using var reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                transacciones.Add(new Transaccion
+                {
+                    Tipo = reader.GetString(0),
+                    Descripcion = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                    Monto = reader.GetDouble(2),
+                    Fecha = reader.GetString(3)
+                });
+            }
+
+            using var stream = await file.OpenStreamForWriteAsync();
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
+            Document.Create(container =>
+            {
+                container.Page(page =>
+                {
+                    page.Margin(30);
+
+                    page.Header().Text("REPORTE DE PROYECTO")
+                        .SemiBold().FontSize(20).FontColor(Colors.Blue.Medium);
+
+                    page.Content().Column(col =>
+                    {
+                        col.Spacing(10);
+
+                        col.Item().Text($"Proyecto: {proyecto.Nombre}");
+                        col.Item().Text($"Costo: ${proyecto.CostoEstimado}");
+                        col.Item().Text($"Estado: {proyecto.Estado}");
+                        col.Item().Text($"Fecha: {DateTime.Now}");
+
+                        col.Item().LineHorizontal(1);
+                        col.Item().Text("Transacciones:").Bold();
+
+                        foreach (var t in transacciones)
+                        {
+                            col.Item().Text($"• {t.Tipo} | {t.Descripcion} | ${t.Monto} | {t.Fecha}");
+                        }
+                    });
+                });
+            }).GeneratePdf(stream);
+
+            await DialogService.ShowMessage("PDF generado correctamente");
         }
 
         private void Volver_Click(object sender, RoutedEventArgs e)
         {
-            var main = new MainWindow(_usuario);
-            main.Activate();
+            new MainWindow(_usuario).Activate();
             this.Close();
         }
     }

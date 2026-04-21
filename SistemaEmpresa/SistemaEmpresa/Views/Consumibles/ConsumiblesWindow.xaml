@@ -34,8 +34,14 @@
             <StackPanel Orientation="Horizontal" Spacing="10">
                 <TextBox x:Name="txtNombre" PlaceholderText="Nombre" Width="220" Foreground="Black"/>
                 <TextBox x:Name="txtCantidad" PlaceholderText="Cantidad" Width="120" Foreground="Black"/>
+
                 <Button Content="Agregar" Click="Agregar_Click"
-                        Background="#3B82F6" Foreground="White"/>
+                    Background="#3B82F6" Foreground="White"/>
+
+                <Button Content="Eliminar"
+                    Click="Eliminar_Click"
+                    Background="#EF4444"
+                    Foreground="White"/>
             </StackPanel>
 
             <Border Background="White" CornerRadius="10" Padding="10">

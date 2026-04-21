@@ -7,20 +7,26 @@ namespace SistemaEmpresa.Database
     {
         public static void Initialize()
         {
+            var directory = Path.GetDirectoryName(DatabaseConfig.DbPath);
+
+            if (!Directory.Exists(directory))
+                Directory.CreateDirectory(directory!);
+
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
 
-            var cmd = connection.CreateCommand();
+            using var pragma = connection.CreateCommand();
+            pragma.CommandText = "PRAGMA foreign_keys = ON;";
+            pragma.ExecuteNonQuery();
+
+            using var cmd = connection.CreateCommand();
 
             cmd.CommandText = @"
-
-            -- ROLES
             CREATE TABLE IF NOT EXISTS ROLES (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 NOMBRE TEXT NOT NULL UNIQUE
             );
 
-            -- USUARIOS (MEJORADO)
             CREATE TABLE IF NOT EXISTS USUARIOS (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 NOMBRE TEXT NOT NULL UNIQUE,
@@ -30,7 +36,6 @@ namespace SistemaEmpresa.Database
                 FOREIGN KEY (ROL_ID) REFERENCES ROLES(ID)
             );
 
-            -- CONSUMIBLES
             CREATE TABLE IF NOT EXISTS CONSUMIBLES (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 NOMBRE TEXT NOT NULL,
@@ -38,15 +43,15 @@ namespace SistemaEmpresa.Database
                 NIVEL_MINIMO INTEGER DEFAULT 5
             );
 
-            -- HERRAMIENTAS
             CREATE TABLE IF NOT EXISTS HERRAMIENTAS (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                NOMBRE TEXT NOT NULL,
+                NOMBRE TEXT NOT NULL COLLATE NOCASE UNIQUE,
                 CANTIDAD_TOTAL INTEGER NOT NULL,
-                CANTIDAD_DISPONIBLE INTEGER NOT NULL
+                CANTIDAD_DISPONIBLE INTEGER NOT NULL,
+                PRESTADAS INTEGER DEFAULT 0,
+                PERDIDAS INTEGER DEFAULT 0
             );
 
-            -- PROYECTOS
             CREATE TABLE IF NOT EXISTS PROYECTOS (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 NOMBRE TEXT NOT NULL,
@@ -54,7 +59,6 @@ namespace SistemaEmpresa.Database
                 ESTADO TEXT DEFAULT 'Pendiente'
             );
 
-            -- TRANSACCIONES
             CREATE TABLE IF NOT EXISTS TRANSACCIONES (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 TIPO TEXT NOT NULL,
@@ -71,15 +75,13 @@ namespace SistemaEmpresa.Database
 
         private static void InsertarDatosIniciales(SqliteConnection connection)
         {
-            var cmd = connection.CreateCommand();
+            using var cmd = connection.CreateCommand();
 
             cmd.CommandText = @"
-            -- ROLES
             INSERT OR IGNORE INTO ROLES (ID, NOMBRE) VALUES (1, 'Admin');
             INSERT OR IGNORE INTO ROLES (ID, NOMBRE) VALUES (2, 'Jefe');
             INSERT OR IGNORE INTO ROLES (ID, NOMBRE) VALUES (3, 'Empleado');
 
-            -- USUARIO ADMIN POR DEFECTO
             INSERT OR IGNORE INTO USUARIOS (ID, NOMBRE, PASSWORD, ROL_ID, ACTIVO)
             VALUES (1, 'admin', '123', 1, 1);
             ";

@@ -6,7 +6,6 @@
 
     <Grid Background="#F3F4F6">
 
-        <!-- HEADER -->
         <Grid Background="#3B82F6" Height="60" VerticalAlignment="Top">
             <TextBlock Text="Administración de Usuarios"
                        Foreground="White"
@@ -28,10 +27,19 @@
 
             <!-- FORMULARIO -->
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBox x:Name="txtNombre" PlaceholderText="Usuario" Width="150"/>
-                <PasswordBox x:Name="txtPassword" PlaceholderText="Contraseña" Width="150"/>
 
-                <ComboBox x:Name="cmbRol" Width="150"/>
+                <TextBox x:Name="txtNombre"
+                         PlaceholderText="Usuario"
+                         Width="160"/>
+
+                <PasswordBox x:Name="txtPassword"
+                             PlaceholderText="Contraseña"
+                             Width="160"/>
+
+                <ComboBox x:Name="cmbRol"
+                          Header="Rol"
+                          PlaceholderText="Selecciona un rol"
+                          Width="180"/>
 
                 <Button Content="Crear"
                         Click="Crear_Click"
@@ -41,13 +49,51 @@
 
             <!-- LISTA -->
             <Border Background="White" CornerRadius="10" Padding="10">
-                <ListView x:Name="listaUsuarios" Height="300"/>
+                <ListView x:Name="listaUsuarios" Height="300">
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#F9FAFB"
+                                    Padding="10"
+                                    Margin="5"
+                                    CornerRadius="8"
+                                    BorderBrush="#E5E7EB"
+                                    BorderThickness="1">
+
+                                <StackPanel>
+
+                                    <TextBlock Text="{Binding Nombre}"
+                                               FontWeight="Bold"
+                                               Foreground="Black"/>
+
+                                    <TextBlock Text="{Binding Rol}"
+                                               Foreground="Black"/>
+
+                                    <TextBlock Text="{Binding EstadoTexto}"
+                                               Foreground="Black"/>
+
+                                </StackPanel>
+
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+
+                </ListView>
             </Border>
 
-            <Button Content="Desactivar Usuario"
-                    Click="Desactivar_Click"
-                    Background="#EF4444"
-                    Foreground="White"/>
+            <StackPanel Orientation="Horizontal" Spacing="10">
+
+                <Button Content="Desactivar"
+                        Click="Desactivar_Click"
+                        Background="#EF4444"
+                        Foreground="White"/>
+
+                <Button Content="Activar"
+                        Click="Activar_Click"
+                        Background="#10B981"
+                        Foreground="White"/>
+
+            </StackPanel>
 
         </StackPanel>
     </Grid>

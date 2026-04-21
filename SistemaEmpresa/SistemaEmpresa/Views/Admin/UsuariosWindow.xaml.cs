@@ -1,11 +1,11 @@
-using Microsoft.Data.Sqlite;
+﻿using Microsoft.Data.Sqlite;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using SistemaEmpresa.Database;
 using SistemaEmpresa.Models;
+using SistemaEmpresa.Services;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SistemaEmpresa.Views.Admin
 {
@@ -17,6 +17,22 @@ namespace SistemaEmpresa.Views.Admin
         {
             this.InitializeComponent();
             _usuario = usuario;
+
+            this.Activated += (s, e) =>
+            {
+                try
+                {
+                    if (e.WindowActivationState != WindowActivationState.Deactivated &&
+                        this.Content is FrameworkElement root &&
+                        root.XamlRoot != null)
+                    {
+                        DialogService.Initialize(root.XamlRoot);
+                    }
+                }
+                catch
+                {
+                }
+            };
 
             CargarRoles();
             CargarUsuarios();
@@ -46,14 +62,14 @@ namespace SistemaEmpresa.Views.Admin
 
         private void CargarUsuarios()
         {
-            var lista = new List<string>();
+            var lista = new List<Usuario>();
 
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
 
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"
-                SELECT U.ID, U.NOMBRE, R.NOMBRE, U.ACTIVO
+                SELECT U.ID, U.NOMBRE, U.ROL_ID, R.NOMBRE, U.ACTIVO
                 FROM USUARIOS U
                 JOIN ROLES R ON U.ROL_ID = R.ID
             ";
@@ -62,9 +78,14 @@ namespace SistemaEmpresa.Views.Admin
 
             while (reader.Read())
             {
-                string estado = reader.GetInt32(3) == 1 ? "Activo" : "Inactivo";
-
-                lista.Add($"{reader.GetInt32(0)} | {reader.GetString(1)} | {reader.GetString(2)} | {estado}");
+                lista.Add(new Usuario
+                {
+                    Id = reader.GetInt32(0),
+                    Nombre = reader.GetString(1),
+                    RolId = reader.GetInt32(2),
+                    Rol = reader.GetString(3),
+                    Activo = reader.GetInt32(4) == 1
+                });
             }
 
             listaUsuarios.ItemsSource = lista;
@@ -72,30 +93,67 @@ namespace SistemaEmpresa.Views.Admin
 
         private async void Crear_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtNombre.Text) ||
-                string.IsNullOrWhiteSpace(txtPassword.Password) ||
+            string nombre = txtNombre.Text.Trim();
+            string password = txtPassword.Password;
+
+            if (string.IsNullOrWhiteSpace(nombre) ||
+                string.IsNullOrWhiteSpace(password) ||
                 cmbRol.SelectedValue == null)
             {
-                await MostrarMensaje("Completa todos los campos");
+                await DialogService.ShowMessage("Completa todos los campos");
                 return;
             }
 
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
 
-            var cmd = connection.CreateCommand();
-            cmd.CommandText = @"
-                INSERT INTO USUARIOS (NOMBRE, PASSWORD, ROL_ID, ACTIVO)
-                VALUES (@nombre, @pass, @rol, 1)
+            var check = connection.CreateCommand();
+            check.CommandText = @"
+                SELECT COUNT(*) 
+                FROM USUARIOS 
+                WHERE NOMBRE = @nombre COLLATE NOCASE
             ";
+            check.Parameters.AddWithValue("@nombre", nombre);
 
-            cmd.Parameters.AddWithValue("@nombre", txtNombre.Text.Trim());
-            cmd.Parameters.AddWithValue("@pass", txtPassword.Password);
-            cmd.Parameters.AddWithValue("@rol", (int)cmbRol.SelectedValue);
+            long existe = Convert.ToInt64(check.ExecuteScalar());
 
-            cmd.ExecuteNonQuery();
+            if (existe > 0)
+            {
+                await DialogService.ShowMessage("El usuario ya existe");
+                return;
+            }
 
-            await MostrarMensaje("Usuario creado");
+            try
+            {
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = @"
+                    INSERT INTO USUARIOS (NOMBRE, PASSWORD, ROL_ID, ACTIVO)
+                    VALUES (@nombre, @pass, @rol, 1)
+                ";
+
+                cmd.Parameters.AddWithValue("@nombre", nombre);
+                cmd.Parameters.AddWithValue("@pass", password);
+                cmd.Parameters.AddWithValue("@rol", (int)cmbRol.SelectedValue);
+
+                int rows = cmd.ExecuteNonQuery();
+
+                if (rows == 0)
+                {
+                    await DialogService.ShowMessage("No se pudo crear el usuario");
+                    return;
+                }
+
+                await DialogService.ShowMessage("Usuario creado");
+            }
+            catch (SqliteException ex)
+            {
+                if (ex.SqliteErrorCode == 19)
+                    await DialogService.ShowMessage("El usuario ya existe");
+                else
+                    await DialogService.ShowMessage("Error: " + ex.Message);
+
+                return;
+            }
 
             txtNombre.Text = "";
             txtPassword.Password = "";
@@ -105,49 +163,79 @@ namespace SistemaEmpresa.Views.Admin
 
         private async void Desactivar_Click(object sender, RoutedEventArgs e)
         {
-            if (listaUsuarios.SelectedItem == null)
+            var u = listaUsuarios.SelectedItem as Usuario;
+
+            if (u == null)
             {
-                await MostrarMensaje("Selecciona un usuario");
+                await DialogService.ShowMessage("Selecciona un usuario");
                 return;
             }
 
-            var texto = listaUsuarios.SelectedItem.ToString();
-            int id = int.Parse(texto.Split('|')[0]);
+            if (!u.Activo)
+            {
+                await DialogService.ShowMessage("El usuario ya está desactivado");
+                return;
+            }
 
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
 
             var cmd = connection.CreateCommand();
             cmd.CommandText = "UPDATE USUARIOS SET ACTIVO = 0 WHERE ID = @id";
-            cmd.Parameters.AddWithValue("@id", id);
+            cmd.Parameters.AddWithValue("@id", u.Id);
 
-            cmd.ExecuteNonQuery();
+            int rows = cmd.ExecuteNonQuery();
 
-            await MostrarMensaje("Usuario desactivado");
+            if (rows == 0)
+            {
+                await DialogService.ShowMessage("No se pudo actualizar");
+                return;
+            }
+
+            await DialogService.ShowMessage("Usuario desactivado");
 
             CargarUsuarios();
         }
 
-        private async Task MostrarMensaje(string mensaje)
+        private async void Activar_Click(object sender, RoutedEventArgs e)
         {
-            var root = this.Content as FrameworkElement;
-            if (root == null) return;
+            var u = listaUsuarios.SelectedItem as Usuario;
 
-            var dialog = new ContentDialog
+            if (u == null)
             {
-                Title = "Sistema",
-                Content = mensaje,
-                CloseButtonText = "OK",
-                XamlRoot = root.XamlRoot
-            };
+                await DialogService.ShowMessage("Selecciona un usuario");
+                return;
+            }
 
-            await dialog.ShowAsync();
+            if (u.Activo)
+            {
+                await DialogService.ShowMessage("El usuario ya está activo");
+                return;
+            }
+
+            using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
+            connection.Open();
+
+            var cmd = connection.CreateCommand();
+            cmd.CommandText = "UPDATE USUARIOS SET ACTIVO = 1 WHERE ID = @id";
+            cmd.Parameters.AddWithValue("@id", u.Id);
+
+            int rows = cmd.ExecuteNonQuery();
+
+            if (rows == 0)
+            {
+                await DialogService.ShowMessage("No se pudo actualizar");
+                return;
+            }
+
+            await DialogService.ShowMessage("Usuario activado");
+
+            CargarUsuarios();
         }
 
         private void Volver_Click(object sender, RoutedEventArgs e)
         {
-            var main = new MainWindow(_usuario);
-            main.Activate();
+            new MainWindow(_usuario).Activate();
             this.Close();
         }
     }

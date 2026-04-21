@@ -85,7 +85,7 @@
                         PointerEntered="MenuHover"
                         PointerExited="MenuLeave"/>
 
-                <!-- 🔥 NUEVO BOTÓN ADMIN -->
+                <!-- ADMIN -->
                 <Button x:Name="btnUsuarios"
                         Content="Usuarios"
                         Click="Usuarios_Click"
@@ -111,7 +111,7 @@
                         Padding="10"/>
             </StackPanel>
 
-            <!-- 📊 CONTENIDO -->
+            <!-- 📊 DASHBOARD -->
             <StackPanel Grid.Column="1" Padding="20" Spacing="15">
 
                 <TextBlock x:Name="txtBienvenida"
@@ -125,7 +125,8 @@
                     <Border Background="#E0F2FE" Padding="15" CornerRadius="10">
                         <StackPanel>
                             <TextBlock Text="Consumibles" Foreground="Black"/>
-                            <TextBlock Text="0"
+                            <TextBlock x:Name="txtTotalConsumibles"
+                                       Text="0"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="Black"/>
@@ -135,7 +136,8 @@
                     <Border Background="#DCFCE7" Padding="15" CornerRadius="10">
                         <StackPanel>
                             <TextBlock Text="Herramientas" Foreground="Black"/>
-                            <TextBlock Text="0"
+                            <TextBlock x:Name="txtTotalHerramientas"
+                                       Text="0"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="Black"/>
@@ -145,7 +147,8 @@
                     <Border Background="#FEF3C7" Padding="15" CornerRadius="10">
                         <StackPanel>
                             <TextBlock Text="Proyectos" Foreground="Black"/>
-                            <TextBlock Text="0"
+                            <TextBlock x:Name="txtTotalProyectos"
+                                       Text="0"
                                        FontSize="20"
                                        FontWeight="Bold"
                                        Foreground="Black"/>

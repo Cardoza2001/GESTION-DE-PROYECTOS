@@ -6,6 +6,7 @@
 
     <Grid Background="#F3F4F6">
 
+        <!-- HEADER -->
         <Grid Background="#3B82F6" Height="60" VerticalAlignment="Top">
             <TextBlock Text="Sistema Empresarial"
                        Foreground="White"
@@ -23,6 +24,7 @@
                     VerticalAlignment="Center"/>
         </Grid>
 
+        <!-- CONTENIDO -->
         <StackPanel Margin="20,80,20,20" Spacing="15">
 
             <TextBlock Text="Panel del Jefe"
@@ -30,18 +32,114 @@
                        FontWeight="Bold"
                        Foreground="Black"/>
 
-            <TextBlock Text="Proyectos" FontWeight="Bold"/>
+            <!-- PROYECTOS -->
+            <TextBlock Text="Proyectos"
+                       FontWeight="Bold"
+                       Foreground="Black"/>
 
-            <ListView x:Name="listaProyectos" Height="200"/>
+            <Border Background="White" CornerRadius="10" Padding="10">
+                <ListView x:Name="listaProyectos" Height="200">
 
-            <Button Content="Aprobar Proyecto"
-                    Click="Aprobar_Click"
-                    Background="#3B82F6"
-                    Foreground="White"/>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#F9FAFB"
+                                    Padding="10"
+                                    Margin="5"
+                                    CornerRadius="8"
+                                    BorderBrush="#E5E7EB"
+                                    BorderThickness="1">
 
-            <TextBlock Text="Transacciones" FontWeight="Bold"/>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Nombre}"
+                                               FontWeight="Bold"
+                                               FontSize="16"
+                                               Foreground="Black"/>
 
-            <ListView x:Name="listaTransacciones" Height="200"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Costo: $" Foreground="Black"/>
+                                        <TextBlock Text="{Binding CostoEstimado}" Foreground="Black"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Estado: " Foreground="Black"/>
+                                        <TextBlock Text="{Binding Estado}" Foreground="Black"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+
+                </ListView>
+            </Border>
+
+            <!-- BOTONES -->
+            <StackPanel Orientation="Horizontal" Spacing="10">
+
+                <Button Content="Aprobar"
+                        Click="Aprobar_Click"
+                        Background="#3B82F6"
+                        Foreground="White"
+                        Padding="10"
+                        CornerRadius="6"/>
+
+                <Button Content="Rechazar"
+                        Click="Rechazar_Click"
+                        Background="#F59E0B"
+                        Foreground="White"
+                        Padding="10"
+                        CornerRadius="6"/>
+
+                <Button Content="Generar PDF"
+                        Click="GenerarPDF_Click"
+                        Background="#10B981"
+                        Foreground="White"
+                        Padding="10"
+                        CornerRadius="6"/>
+
+            </StackPanel>
+
+            <!-- TRANSACCIONES -->
+            <TextBlock Text="Transacciones"
+                       FontWeight="Bold"
+                       Foreground="Black"/>
+
+            <Border Background="White" CornerRadius="10" Padding="10">
+                <ListView x:Name="listaTransacciones" Height="200">
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#F9FAFB"
+                                    Padding="10"
+                                    Margin="5"
+                                    CornerRadius="8"
+                                    BorderBrush="#E5E7EB"
+                                    BorderThickness="1">
+
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Tipo}"
+                                               FontWeight="Bold"
+                                               Foreground="Black"/>
+
+                                    <TextBlock Text="{Binding Descripcion}"
+                                               Foreground="Black"/>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Monto: $" Foreground="Black"/>
+                                        <TextBlock Text="{Binding Monto}" Foreground="Black"/>
+                                    </StackPanel>
+
+                                    <TextBlock Text="{Binding Fecha}"
+                                               Foreground="Gray"
+                                               FontSize="12"/>
+                                </StackPanel>
+
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+
+                </ListView>
+            </Border>
 
         </StackPanel>
     </Grid>

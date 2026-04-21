@@ -6,7 +6,6 @@ using SistemaEmpresa.Services;
 using SistemaEmpresa.Database;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SistemaEmpresa.Views.Consumibles
 {
@@ -19,10 +18,15 @@ namespace SistemaEmpresa.Views.Consumibles
             this.InitializeComponent();
             _usuario = usuario;
 
+            this.Activated += (s, e) =>
+            {
+                if (this.Content is FrameworkElement root)
+                    DialogService.Initialize(root.XamlRoot);
+            };
+
             CargarConsumibles();
         }
 
-        // 🔥 CARGAR DESDE SQLITE
         private void CargarConsumibles()
         {
             var listaConsumibles = new List<Consumible>();
@@ -51,30 +55,38 @@ namespace SistemaEmpresa.Views.Consumibles
 
         private async void Agregar_Click(object sender, RoutedEventArgs e)
         {
-            // 🔐 Validar nombre
-            if (!ValidationService.EsTextoValido(txtNombre.Text))
+            string nombre = txtNombre.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(nombre))
             {
-                await MostrarMensaje("El nombre es obligatorio");
+                await DialogService.ShowMessage("El nombre es obligatorio");
                 return;
             }
 
-            // 🔢 Validar cantidad
-            if (!ValidationService.EsEnteroValido(txtCantidad.Text, out int cantidad))
+            if (!int.TryParse(txtCantidad.Text, out int cantidad) || cantidad < 0)
             {
-                await MostrarMensaje("La cantidad debe ser un número válido");
+                await DialogService.ShowMessage("Cantidad inválida");
                 return;
             }
 
-            // 🚫 Validar negativo
-            if (cantidad < 0)
-            {
-                await MostrarMensaje("La cantidad no puede ser negativa");
-                return;
-            }
-
-            // 💾 INSERT EN SQLITE
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
+
+            var check = connection.CreateCommand();
+            check.CommandText = @"
+                SELECT COUNT(*) 
+                FROM CONSUMIBLES 
+                WHERE NOMBRE = @nombre COLLATE NOCASE
+            ";
+            check.Parameters.AddWithValue("@nombre", nombre);
+
+            long existe = Convert.ToInt64(check.ExecuteScalar());
+
+            if (existe > 0)
+            {
+                await DialogService.ShowMessage("El consumible ya existe");
+                return;
+            }
 
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"
@@ -82,39 +94,78 @@ namespace SistemaEmpresa.Views.Consumibles
                 VALUES (@nombre, @cantidad, 5)
             ";
 
-            cmd.Parameters.AddWithValue("@nombre", txtNombre.Text.Trim());
+            cmd.Parameters.AddWithValue("@nombre", nombre);
             cmd.Parameters.AddWithValue("@cantidad", cantidad);
 
-            cmd.ExecuteNonQuery();
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (SqliteException ex)
+            {
+                if (ex.SqliteErrorCode == 19)
+                    await DialogService.ShowMessage("El consumible ya existe");
+                else
+                    await DialogService.ShowMessage("Error: " + ex.Message);
 
-            // 🔄 RECARGAR LISTA
+                return;
+            }
+
+            await DialogService.ShowMessage("Consumible agregado correctamente");
+
             CargarConsumibles();
 
-            // 🧹 Limpiar campos
             txtNombre.Text = "";
             txtCantidad.Text = "";
         }
 
-        private async Task MostrarMensaje(string mensaje)
+        private async void Eliminar_Click(object sender, RoutedEventArgs e)
         {
-            var root = this.Content as FrameworkElement;
-            if (root == null) return;
+            var seleccionado = lista.SelectedItem as Consumible;
 
-            var dialog = new ContentDialog
+            if (seleccionado == null)
             {
-                Title = "Sistema",
-                Content = mensaje,
-                CloseButtonText = "OK",
-                XamlRoot = root.XamlRoot
-            };
+                await DialogService.ShowMessage("Selecciona un consumible");
+                return;
+            }
 
-            await dialog.ShowAsync();
+            bool confirmar = await DialogService.Confirm(
+                $"¿Eliminar el consumible '{seleccionado.Nombre}'?"
+            );
+
+            if (!confirmar)
+                return;
+
+            try
+            {
+                using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "DELETE FROM CONSUMIBLES WHERE ID = @id";
+                cmd.Parameters.AddWithValue("@id", seleccionado.Id);
+
+                int rows = cmd.ExecuteNonQuery();
+
+                if (rows == 0)
+                {
+                    await DialogService.ShowMessage("No se pudo eliminar");
+                    return;
+                }
+
+                await DialogService.ShowMessage("Consumible eliminado");
+
+                CargarConsumibles();
+            }
+            catch (SqliteException ex)
+            {
+                await DialogService.ShowMessage("Error: " + ex.Message);
+            }
         }
 
         private void Volver_Click(object sender, RoutedEventArgs e)
         {
-            var main = new MainWindow(_usuario);
-            main.Activate();
+            new MainWindow(_usuario).Activate();
             this.Close();
         }
     }

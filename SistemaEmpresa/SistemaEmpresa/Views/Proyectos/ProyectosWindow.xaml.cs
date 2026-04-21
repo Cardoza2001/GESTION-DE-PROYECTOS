@@ -6,7 +6,6 @@ using SistemaEmpresa.Models;
 using SistemaEmpresa.Services;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace SistemaEmpresa.Views.Proyectos
 {
@@ -19,10 +18,15 @@ namespace SistemaEmpresa.Views.Proyectos
             this.InitializeComponent();
             _usuario = usuario;
 
+            this.Activated += (s, e) =>
+            {
+                if (this.Content is FrameworkElement root)
+                    DialogService.Initialize(root.XamlRoot);
+            };
+
             CargarProyectos();
         }
 
-        // 🔥 CARGAR DESDE SQLITE
         private void CargarProyectos()
         {
             var listaProyectos = new List<Proyecto>();
@@ -51,30 +55,38 @@ namespace SistemaEmpresa.Views.Proyectos
 
         private async void Crear_Click(object sender, RoutedEventArgs e)
         {
-            // 🔐 Validar nombre
-            if (!ValidationService.EsTextoValido(txtNombre.Text))
+            string nombre = txtNombre.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(nombre))
             {
-                await MostrarMensaje("El nombre es obligatorio");
+                await DialogService.ShowMessage("El nombre es obligatorio");
                 return;
             }
 
-            // 🔢 Validar costo
-            if (!ValidationService.EsDoubleValido(txtCosto.Text, out double costo))
+            if (!double.TryParse(txtCosto.Text, out double costo) || costo <= 0)
             {
-                await MostrarMensaje("El costo debe ser un número válido");
+                await DialogService.ShowMessage("El costo debe ser válido y mayor a 0");
                 return;
             }
 
-            // 🚫 Validar > 0
-            if (costo <= 0)
-            {
-                await MostrarMensaje("El costo debe ser mayor a 0");
-                return;
-            }
-
-            // 💾 INSERT EN SQLITE
             using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
             connection.Open();
+
+            var check = connection.CreateCommand();
+            check.CommandText = @"
+                SELECT COUNT(*) 
+                FROM PROYECTOS 
+                WHERE NOMBRE = @nombre COLLATE NOCASE
+            ";
+            check.Parameters.AddWithValue("@nombre", nombre);
+
+            long existe = Convert.ToInt64(check.ExecuteScalar());
+
+            if (existe > 0)
+            {
+                await DialogService.ShowMessage("El proyecto ya existe");
+                return;
+            }
 
             var cmd = connection.CreateCommand();
             cmd.CommandText = @"
@@ -82,39 +94,84 @@ namespace SistemaEmpresa.Views.Proyectos
                 VALUES (@nombre, @costo, 'Pendiente')
             ";
 
-            cmd.Parameters.AddWithValue("@nombre", txtNombre.Text.Trim());
+            cmd.Parameters.AddWithValue("@nombre", nombre);
             cmd.Parameters.AddWithValue("@costo", costo);
 
-            cmd.ExecuteNonQuery();
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (SqliteException ex)
+            {
+                if (ex.SqliteErrorCode == 19)
+                    await DialogService.ShowMessage("El proyecto ya existe");
+                else
+                    await DialogService.ShowMessage("Error: " + ex.Message);
 
-            // 🔄 RECARGAR LISTA
+                return;
+            }
+
+            await DialogService.ShowMessage("Proyecto creado correctamente");
+
             CargarProyectos();
 
-            // 🧹 Limpiar campos
             txtNombre.Text = "";
             txtCosto.Text = "";
         }
 
-        private async Task MostrarMensaje(string mensaje)
+        private async void Eliminar_Click(object sender, RoutedEventArgs e)
         {
-            var root = this.Content as FrameworkElement;
-            if (root == null) return;
+            var proyecto = lista.SelectedItem as Proyecto;
 
-            var dialog = new ContentDialog
+            if (proyecto == null)
             {
-                Title = "Sistema",
-                Content = mensaje,
-                CloseButtonText = "OK",
-                XamlRoot = root.XamlRoot
-            };
+                await DialogService.ShowMessage("Selecciona un proyecto");
+                return;
+            }
 
-            await dialog.ShowAsync();
+            if (proyecto.Estado != "Rechazado")
+            {
+                await DialogService.ShowMessage("Solo se pueden eliminar proyectos rechazados");
+                return;
+            }
+
+            bool confirmar = await DialogService.Confirm(
+                $"¿Eliminar el proyecto '{proyecto.Nombre}'?"
+            );
+
+            if (!confirmar)
+                return;
+
+            try
+            {
+                using var connection = new SqliteConnection(DatabaseConfig.ConnectionString);
+                connection.Open();
+
+                var cmd = connection.CreateCommand();
+                cmd.CommandText = "DELETE FROM PROYECTOS WHERE ID = @id";
+                cmd.Parameters.AddWithValue("@id", proyecto.Id);
+
+                int rows = cmd.ExecuteNonQuery();
+
+                if (rows == 0)
+                {
+                    await DialogService.ShowMessage("No se pudo eliminar");
+                    return;
+                }
+
+                await DialogService.ShowMessage("Proyecto eliminado");
+
+                CargarProyectos();
+            }
+            catch (SqliteException ex)
+            {
+                await DialogService.ShowMessage("Error: " + ex.Message);
+            }
         }
 
         private void Volver_Click(object sender, RoutedEventArgs e)
         {
-            var main = new MainWindow(_usuario);
-            main.Activate();
+            new MainWindow(_usuario).Activate();
             this.Close();
         }
     }
